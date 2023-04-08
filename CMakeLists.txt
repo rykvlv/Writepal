@@ -36,4 +36,4 @@ set(SOURCES include/Bot/Bot.h
             )
 add_executable(Writepal ${SOURCES})
 target_include_directories(Writepal PUBLIC include/ 3rdparty/include/)
-target_link_libraries(Writepal /usr/local/lib/libTgBot.a ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
+target_link_libraries(Writepal lib/libTgBot.a ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
