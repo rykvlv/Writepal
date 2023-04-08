@@ -94,7 +94,7 @@ std::optional<std::string> GptService::CleanPrompt(std::string request, std::vec
         std::string url = "https://api.openai.com/v1/chat/completions";
         std::string response = httpService->MakeRequest(url, HttpService::ResponseMethod::POST, body, headers);
         nlohmann::json jsonResponse = nlohmann::json::parse(response);
-        std::string message = jsonResponse["choices"][0]["text"].get<std::string>();
+        std::string message = jsonResponse["choices"][0]["message"]["content"].get<std::string>();
         chatHistory.push_back(std::make_pair("assistant", message));
 
         return message;
