@@ -1,0 +1,5 @@
+namespace rykvlv {
+struct User {
+
+};
+}

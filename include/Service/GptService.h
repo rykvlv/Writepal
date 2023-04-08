@@ -3,6 +3,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <Service/HttpService.h>
+#include <optional>
 
 using json = nlohmann::json;
 
@@ -45,10 +46,14 @@ public:
     GptService(const std::string& token);
     ~GptService();
 
-    GptResponse Promt(const std::string& request);
+    std::optional<GptResponse> Prompt(long long chatId, std::string request);
+    //This prompt doesn't affect main chat history
+    std::optional<GptResponse> CleanPrompt(std::string request, std::vector<std::pair<std::string, std::string>>& chatHistory);
+    std::string WriteArticle(std::string articleTheme);
 private:
     void from_json(const json& j, GptResponse& cc);
     std::string m_token;
+    std::unordered_map<long long, std::vector<std::pair<std::string, std::string>>> m_chatHistory;
 
     HttpService* httpService;
 };

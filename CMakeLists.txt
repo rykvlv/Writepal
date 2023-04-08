@@ -20,10 +20,14 @@ endif()
 set(SOURCES include/Bot/Bot.h 
             include/Service/HttpService.h
             include/Service/GptService.h
+            include/System/EventManager/EventManager.hpp
+            include/System/EventManager/Events/PromptEvent.hpp
+            include/System/EventManager/Events/ArticleEvent.hpp
             3rdparty/include/nlohmann/json.hpp
             src/Bot/Bot.cpp src/main.cpp 
             src/Service/HttpService.cpp
             src/Service/GptService.cpp
+            src/System/EventManager/EventManager.cpp
             )
 add_executable(Writepal ${SOURCES})
 target_include_directories(Writepal PUBLIC include/ 3rdparty/include/)
