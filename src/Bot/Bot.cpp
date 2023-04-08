@@ -7,10 +7,9 @@
 namespace rykvlv {
 
 Bot::Bot(const std::string& token) : m_token(token) {
-    m_tgBot = new TgBot::Bot(token); //std::make_unique<TgBot::Bot>(token);
-    std::string main_token = "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";
-    std::string free_token = "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";
-    gptService = new GptService(free_token);
+    m_tgBot = new TgBot::Bot(token);
+    std::string gptToken = std::getenv("GPT3_APT_KEY");
+    gptService = new GptService(gptToken);
     m_longPoll = new TgBot::TgLongPoll(*m_tgBot);
     m_eventManager = new EventManager();
 }
@@ -25,12 +24,12 @@ void Bot::RegisterEvents() {
     m_eventManager->RegisterHandler("Prompt", [*this](const void* eventData) {
         auto promptEvent = static_cast<const PromptEvent*>(eventData);
 
-        std::optional<GptService::GptResponse> gptResponse = gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
+        std::optional<std::string> gptResponse = gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
         if (!gptResponse.has_value()) {
             std::cout << "Error: Bot::Event::PromptEvent: Error occured on message -> " << promptEvent->GetMessage() << std::endl;
         }
 
-        std::string textResponse = gptResponse.value().choices[0].message.content;
+        std::string textResponse = gptResponse.value();
         m_tgBot->getApi().sendMessage(promptEvent->GetChatId(), textResponse);
     });
 

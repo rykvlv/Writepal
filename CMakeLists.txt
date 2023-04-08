@@ -17,6 +17,11 @@ if (CURL_FOUND)
     add_definitions(-DHAVE_CURL)
 endif()
 
+configure_file(
+    ${CMAKE_SOURCE_DIR}/.env.template
+    ${CMAKE_BINARY_DIR}/.env
+)
+
 set(SOURCES include/Bot/Bot.h 
             include/Service/HttpService.h
             include/Service/GptService.h
