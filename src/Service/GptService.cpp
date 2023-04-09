@@ -48,10 +48,15 @@ std::optional<std::string> GptService::Prompt(long long from, std::string input)
         std::string response = httpService->MakeRequest(url, HttpService::ResponseMethod::POST, body, headers);
         nlohmann::json jsonResponse = nlohmann::json::parse(response);
         std::cout << "Response content: " << response << std::endl;
-        std::string message = jsonResponse["choices"][0]["message"]["content"].get<std::string>();
-        m_chatHistory[from].push_back(std::make_pair("assistant", message));
+        if (jsonResponse.contains("choices") && jsonResponse["choices"].is_array() &&
+            jsonResponse["choices"].size() > 0) {
+            std::string message = jsonResponse["choices"][0]["message"]["content"].get<std::string>();
+            m_chatHistory[from].push_back(std::make_pair("assistant", message));
 
-        return message;
+            return message;
+        } else {
+            return std::nullopt;
+        }
     } catch (const std::exception& e) {
         std::cout << "Error: GptSerivce::Prompt(): Error sending HTTP request" << std::endl;
         std::cout << body << std::endl;
@@ -94,10 +99,15 @@ std::optional<std::string> GptService::CleanPrompt(std::string request, std::vec
         std::string url = "https://api.openai.com/v1/chat/completions";
         std::string response = httpService->MakeRequest(url, HttpService::ResponseMethod::POST, body, headers);
         nlohmann::json jsonResponse = nlohmann::json::parse(response);
-        std::string message = jsonResponse["choices"][0]["message"]["content"].get<std::string>();
-        chatHistory.push_back(std::make_pair("assistant", message));
+        if (jsonResponse.contains("choices") && jsonResponse["choices"].is_array() &&
+            jsonResponse["choices"].size() > 0) {
+            std::string message = jsonResponse["choices"][0]["message"]["content"].get<std::string>();
+            chatHistory.push_back(std::make_pair("assistant", message));
 
-        return message;
+            return message;
+        } else {
+            std::nullopt;
+        }
     } catch (const std::exception& e) {
         std::cout << "Error: GptSerivce::CleanPrompt(): Error sending HTTP request" << std::endl;
         std::cout << body << std::endl;
@@ -106,7 +116,7 @@ std::optional<std::string> GptService::CleanPrompt(std::string request, std::vec
     }
 }
 
-std::string GptService::WriteArticle(std::string articleTheme) {
+std::optional<std::string> GptService::WriteArticle(std::string articleTheme) {
     std::string message = ("Напиши статью на тему " + articleTheme + " на 2000 символов без заключения.");
     std::vector<std::pair<std::string, std::string>> chatHistory;
     std::string result;
@@ -114,7 +124,7 @@ std::string GptService::WriteArticle(std::string articleTheme) {
     std::optional<std::string> gptResponse = CleanPrompt(message, chatHistory);
     if (!gptResponse.has_value()) {
         std::cout << "Error: GptService::WriteArticle(): Error on generating article!" << std::endl;
-        return "error";
+        return std::nullopt;
     }
 
     result = gptResponse.value();
@@ -124,7 +134,7 @@ std::string GptService::WriteArticle(std::string articleTheme) {
     gptResponse = CleanPrompt(finish, chatHistory);
     if (!gptResponse.has_value()) {
         std::cout << "Error: GptService::WriteArticle(): Error on writing article!" << std::endl;
-        return "error";
+        return std::nullopt;
     }
 
     result += gptResponse.value();
@@ -134,7 +144,7 @@ std::string GptService::WriteArticle(std::string articleTheme) {
     gptResponse = CleanPrompt(finish, chatHistory);
     if (!gptResponse.has_value()) {
         std::cout << "Error: GptService::WriteArticle(): Error on finishing article!" << std::endl;
-        return "error";
+        return std::nullopt;
     }
 
     result += gptResponse.value();
