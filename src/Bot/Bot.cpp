@@ -26,17 +26,13 @@ void Bot::RegisterEvents() {
     m_eventManager->RegisterHandler("Prompt", [*this](const void* eventData) {
         auto promptEvent = static_cast<const PromptEvent*>(eventData);
 
-        std::future<std::optional<std::string>> futureResponse = std::async(std::launch::async, [this, promptEvent]{
-            return gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
-        });
+        std::optional<std::string> gptResponse = gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
 
-        m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
-        while (futureResponse.wait_for(std::chrono::milliseconds(5000)) == std::future_status::timeout) {
-            std::cout << "Sending typing status" << std::endl;
-            m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
-        }
-
-        std::optional<std::string> gptResponse = futureResponse.get();
+        // m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
+        // while (futureResponse.wait_for(std::chrono::milliseconds(5000)) == std::future_status::timeout) {
+        //     std::cout << "Sending typing status" << std::endl;
+        //     m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
+        // }
         if (!gptResponse.has_value()) {
             std::cout << "Error: Bot::Event::PromptEvent: Error occured on message -> " << promptEvent->GetMessage() << std::endl;
             m_tgBot->getApi().sendMessage(promptEvent->GetChatId(), "Похоже, что сервис OpenAI сильно перегружен. Попробуйте позже.");
@@ -49,14 +45,12 @@ void Bot::RegisterEvents() {
 
     m_eventManager->RegisterHandler("Article", [*this](const void* eventData) {
         auto articleEvent = static_cast<const ArticleEvent*>(eventData);
-        std::future<std::optional<std::string>> futureResponse = std::async(std::launch::async, [this, articleEvent]{
-            return gptService->WriteArticle(articleEvent->GetArticleTheme());
-        });
+        std::optional<std::string> response = gptService->WriteArticle(articleEvent->GetArticleTheme());
 
-        while (futureResponse.wait_for(std::chrono::milliseconds(5000)) == std::future_status::timeout) {
-            m_tgBot->getApi().sendChatAction(articleEvent->GetChatId(), "typing");
-        }
-        std::optional<std::string> response = futureResponse.get();
+        // while (futureResponse.wait_for(std::chrono::milliseconds(5000)) == std::future_status::timeout) {
+        //     m_tgBot->getApi().sendChatAction(articleEvent->GetChatId(), "typing");
+        // }
+        //std::optional<std::string> response = futureResponse.get();
 
         if (!response.has_value()) {
             std::cout << "Error: Bot::Event::ArticleEvent: Error occured on message -> " << articleEvent->GetArticleTheme() << std::endl;
