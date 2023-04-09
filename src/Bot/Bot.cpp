@@ -73,18 +73,18 @@ void Bot::SetupEvents() {
 
         switch (m_currentState) {
             case EBotState::EPrompt: {
+                std::cout << "Received message from chatId: " << message->chat->id << std::endl;
+                std::cout << "Prompt mode. Requested prompt: " << message->text << std::endl;
                 PromptEvent promptEvent(static_cast<long long>(message->chat->id), message->text);
                 m_eventManager->TriggerEvent("Prompt", &promptEvent);
-                std::cout << "Prompt mode" << std::endl;
                 break;
             }
             case EBotState::EArticle: {
+                std::cout << "Article Mode. Requested theme: " << message->text << std::endl;
                 std::thread([&](){
                     ArticleEvent articleEvent(static_cast<long long>(message->chat->id), message->text);
                     m_eventManager->TriggerEvent("Article", &articleEvent);
                 }).detach();
-                
-                std::cout << "Article mode" << std::endl;
                 break;
             }
             case EBotState::EArticles: {
