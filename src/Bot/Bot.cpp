@@ -1,6 +1,7 @@
 #include <Bot/Bot.h>
 #include <iostream>
 #include <stdio.h>
+#include <future>
 #include <System/EventManager/Events/PromptEvent.hpp>
 #include <System/EventManager/Events/ArticleEvent.hpp>
 #include <System/EventManager/Events/ClearDialogEvent.hpp>
@@ -36,7 +37,14 @@ void Bot::RegisterEvents() {
 
     m_eventManager->RegisterHandler("Article", [*this](const void* eventData) {
         auto articleEvent = static_cast<const ArticleEvent*>(eventData);
-        std::string response = gptService->WriteArticle(articleEvent->GetArticleTheme());
+        std::future<std::string> futureResponse = std::async(std::launch::async, [this, articleEvent]{
+            return gptService->WriteArticle(articleEvent->GetArticleTheme());
+        });
+
+        while (futureResponse.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout) {
+            m_tgBot->getApi().sendChatAction(articleEvent->GetChatId(), "typing");
+        }
+        std::string response = futureResponse.get();
         std::string filename = "articles/" + articleEvent->GetArticleTheme() + ".txt";
         std::ofstream articleFile(filename);
         if (articleFile.is_open()) {
