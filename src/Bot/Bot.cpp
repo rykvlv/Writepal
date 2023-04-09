@@ -29,8 +29,10 @@ void Bot::RegisterEvents() {
         std::future<std::optional<std::string>> futureResponse = std::async(std::launch::async, [this, promptEvent]{
             return gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
         });
-
+        
+        m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
         while (futureResponse.wait_for(std::chrono::milliseconds(5000)) == std::future_status::timeout) {
+            std::cout << "Sending typing status" << std::endl;
             m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
         }
 
