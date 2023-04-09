@@ -20,6 +20,7 @@ endif()
 configure_file(
     ${CMAKE_SOURCE_DIR}/.env.template
     ${CMAKE_BINARY_DIR}/.env
+    @ONLY
 )
 
 set(SOURCES include/Bot/Bot.h 
