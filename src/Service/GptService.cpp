@@ -144,6 +144,13 @@ std::string GptService::WriteArticle(std::string articleTheme) {
     return result;
 }
 
+void GptService::ClearDialog(long long chatId) {
+    auto chatHistory = m_chatHistory.find(chatId);
+    if (chatHistory != m_chatHistory.end()) {
+        chatHistory->second.clear();
+    }
+}
+
 void GptService::from_json(const json& j, GptResponse& cc) {
     j.at("id").get_to(cc.id);
     j.at("object").get_to(cc.object);
