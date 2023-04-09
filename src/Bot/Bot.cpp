@@ -30,7 +30,7 @@ void Bot::RegisterEvents() {
             return gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
         });
 
-        while (futureResponse.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout) {
+        while (futureResponse.wait_for(std::chrono::milliseconds(5000)) == std::future_status::timeout) {
             m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
         }
 
@@ -49,7 +49,7 @@ void Bot::RegisterEvents() {
             return gptService->WriteArticle(articleEvent->GetArticleTheme());
         });
 
-        while (futureResponse.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout) {
+        while (futureResponse.wait_for(std::chrono::milliseconds(5000)) == std::future_status::timeout) {
             m_tgBot->getApi().sendChatAction(articleEvent->GetChatId(), "typing");
         }
         std::string response = futureResponse.get();
