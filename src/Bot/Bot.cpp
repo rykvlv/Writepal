@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <System/EventManager/Events/PromptEvent.hpp>
 #include <System/EventManager/Events/ArticleEvent.hpp>
+#include <System/EventManager/Events/ClearDialogEvent.hpp>
 
 namespace rykvlv {
 
@@ -48,18 +49,24 @@ void Bot::RegisterEvents() {
         std::string chatId = std::to_string(articleEvent->GetChatId());
         Bot::sendFileToChat(chatId, m_token, filename);
     });
+
+    m_eventManager->RegisterHandler("ClearDialog", [*this](const void* eventData) {
+        auto clearDialogEventData = static_cast<const ClearDialogEvent*>(eventData);
+        gptService->ClearDialog(clearDialogEventData->GetChatId());
+        m_tgBot->getApi().sendMessage(clearDialogEventData->GetChatId(), "Диалог успешно очищен!");
+    });
 }
 
 void Bot::SetupEvents() {
     m_tgBot->getEvents().onAnyMessage([&](TgBot::Message::Ptr message) {
         if (message->text == "/prompt") {
             m_currentState = EBotState::EPrompt;
-            m_tgBot->getApi().sendMessage(message->chat->id, "Bot switched to prompt mode.");
+            m_tgBot->getApi().sendMessage(message->chat->id, "Бот переключен в режим диалога.");
             return;
         }
         if (message->text == "/article") {
             m_currentState = EBotState::EArticle;
-            m_tgBot->getApi().sendMessage(message->chat->id, "Bot switched to article mode. Please write the article topic.");
+            m_tgBot->getApi().sendMessage(message->chat->id, "Бот переключен в режим написания статьи. Пожалуйста, отправьте тему статьи.");
             return;
         }
         if (message->text == "/articles") {
@@ -67,7 +74,8 @@ void Bot::SetupEvents() {
             return;
         }
         if (message->text == "/clear") {
-            // handle clear command
+            ClearDialogEvent clearDialogEvent(static_cast<long long>(message->chat->id));
+            m_eventManager->TriggerEvent("ClearDialog", &clearDialogEvent);
             return;
         }
 

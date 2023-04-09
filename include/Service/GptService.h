@@ -50,6 +50,7 @@ public:
     //This prompt doesn't affect main chat history
     std::optional<std::string> CleanPrompt(std::string request, std::vector<std::pair<std::string, std::string>>& chatHistory);
     std::string WriteArticle(std::string articleTheme);
+    void ClearDialog(long long chatId);
 private:
     void from_json(const json& j, GptResponse& cc);
     std::string processString(const std::string& s);

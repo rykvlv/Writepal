@@ -28,6 +28,7 @@ set(SOURCES include/Bot/Bot.h
             include/System/EventManager/EventManager.hpp
             include/System/EventManager/Events/PromptEvent.hpp
             include/System/EventManager/Events/ArticleEvent.hpp
+            include/System/EventManager/Events/ClearDialogEvent.hpp
             3rdparty/include/nlohmann/json.hpp
             src/Bot/Bot.cpp src/main.cpp 
             src/Service/HttpService.cpp
