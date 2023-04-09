@@ -26,7 +26,15 @@ void Bot::RegisterEvents() {
     m_eventManager->RegisterHandler("Prompt", [*this](const void* eventData) {
         auto promptEvent = static_cast<const PromptEvent*>(eventData);
 
-        std::optional<std::string> gptResponse = gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
+        std::future<std::optional<std::string>> futureResponse = std::async(std::launch::async, [this, promptEvent]{
+            return gptService->Prompt(promptEvent->GetChatId(), promptEvent->GetMessage());
+        });
+
+        while (futureResponse.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout) {
+            m_tgBot->getApi().sendChatAction(promptEvent->GetChatId(), "typing");
+        }
+
+        std::optional<std::string> gptResponse = futureResponse.get();
         if (!gptResponse.has_value()) {
             std::cout << "Error: Bot::Event::PromptEvent: Error occured on message -> " << promptEvent->GetMessage() << std::endl;
         }
@@ -97,10 +105,8 @@ void Bot::SetupEvents() {
             }
             case EBotState::EArticle: {
                 std::cout << "Article Mode. Requested theme: " << message->text << std::endl;
-                std::thread([&](){
-                    ArticleEvent articleEvent(static_cast<long long>(message->chat->id), message->text);
-                    m_eventManager->TriggerEvent("Article", &articleEvent);
-                }).detach();
+                ArticleEvent articleEvent(static_cast<long long>(message->chat->id), message->text);
+                m_eventManager->TriggerEvent("Article", &articleEvent);
                 break;
             }
             case EBotState::EArticles: {
